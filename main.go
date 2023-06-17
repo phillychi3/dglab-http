@@ -1,15 +1,16 @@
 package main
 
 // 讲真的 开发这个项目 调试的时候是十分甚至九分痛苦
-
+// 確實
 import (
 	"bytes"
 	"fmt"
-	"github.com/bearmini/bitstream-go"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/bearmini/bitstream-go"
+	"github.com/gin-gonic/gin"
 	"tinygo.org/x/bluetooth"
 )
 
@@ -21,10 +22,10 @@ type SetPowerRequest struct {
 }
 
 type SendWaveRequest struct {
-	Channel uint `json:"channel" binding:"required,min=1,max=2"`
-	ParamX  uint `json:"paramX" binding:"required,max=31"`
-	ParamY  uint `json:"paramY" binding:"required,max=1023"`
-	ParamZ  uint `json:"paramZ" binding:"required,max=31"`
+	Channel int  `json:"channel" binding:"required,min=1,max=2"`
+	ParamX  *int `json:"paramX" binding:"required,max=31"`
+	ParamY  *int `json:"paramY" binding:"required,max=1023"`
+	ParamZ  *int `json:"paramZ" binding:"required,max=31"`
 }
 
 // Functions
@@ -154,7 +155,7 @@ func main() {
 	println("Initializing bluetooth...")
 	err := adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
 		// println("Found device: ", device.Address.String(), device.RSSI, device.LocalName())
-		if device.Address.String() == connectAddress() {
+		if device.LocalName() == "D-LAB ESTIM01" {
 			println("Found device! Connecting to " + device.LocalName())
 			adapter.StopScan()
 			ch <- device
@@ -313,9 +314,9 @@ func main() {
 		wr.WriteBool(false)
 		wr.WriteBool(false)
 		wr.WriteBool(false)
-		wr.WriteNBitsOfUint8(5, uint8(req.ParamZ))
-		wr.WriteNBitsOfUint16BE(10, uint16(req.ParamY))
-		wr.WriteNBitsOfUint8(5, uint8(req.ParamX))
+		wr.WriteNBitsOfUint8(5, uint8(*req.ParamZ))
+		wr.WriteNBitsOfUint16BE(10, uint16(*req.ParamY))
+		wr.WriteNBitsOfUint8(5, uint8(*req.ParamX))
 		wr.Flush()
 		err = nil
 		if req.Channel == 1 {
